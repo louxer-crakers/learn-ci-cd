@@ -1,4 +1,4 @@
-FROM python:13-alpine
+FROM python:13
 
 WORKDIR /app
 
