@@ -63,20 +63,48 @@ jobs:
 
       - name: Run
         run: |
-          if (docker ps -q -f name=app)  {
-            docker stop app
+          if (docker ps -a -q -f name=app-backup) {
+              docker rm -f app-backup
           }
-          if (docker ps -a -q -f name=app)  {
-            docker rm app
-          }
-          docker run -d -p 80:5000 --name app ${{ env.USER_DOCKERHUB }}/${{ env.IMAGE_NAME }}:latest
 
-      - name: Health Check
-        run: |
-          Start-Sleep -Seconds 5
-          $response = Invoke-RestMethod -uri http://localhost/health
-          if ($response.status -eq "ok") {
-            Write-Host "Deployment success"
-          } else {
-            throw "Health Check Fail"
+          $hasOldContainer = $false
+          if (docker ps -q -f name=app) {
+              docker stop app
+              docker rename app app-backup
+              $hasOldContainer = $true
+          }
+
+          docker run -d -p 5000:5000 --name app ${{ env.USER_DOCKERHUB }}/${{ env.IMAGE_NAME }}:latest
+
+          Start-Sleep -Seconds 4
+
+          try {
+              $response = Invoke-RestMethod -Uri http://localhost:5000/health -TimeoutSec 5
+              if ($response.status -ne "ok") {
+                  throw "Status response bukan OK!"
+              }
+              
+              Write-Host "===> DEPLOYMENT SUKSES! Membersihkan backup lama..."
+              if ($hasOldContainer) {
+                  docker rm -f app-backup
+              }
+          }
+          catch {
+              Write-Host "===> HEALTH CHECK GAGAL! Memulai prosedur ROLLBACK..." -ForegroundColor Red
+              
+              # Hapus kontainer baru yang rusak
+              docker rm -f app
+
+              # Kembalikan kontainer lama jika ada
+              if ($hasOldContainer) {
+                  Write-Host "Menghidupkan kembali kontainer versi sebelumnya..."
+                  docker rename app-backup app
+                  docker start app
+                  Write-Host "Rollback selesai. Sistem kembali ke versi stabil."
+              } else {
+                  Write-Host "Tidak ada versi sebelumnya untuk di-rollback."
+              }
+
+              # Lempar error agar status GitHub Actions tetap merah
+              throw "Deployment dibatalkan karena aplikasi gagal health check! Rollback telah dijalankan."
           }
