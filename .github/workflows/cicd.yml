@@ -70,3 +70,13 @@ jobs:
             docker rm app
           }
           docker run -d -p 80:5000 --name app ${{ env.USER_DOCKERHUB }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Health Check
+        run: |
+          Start-Sleep -Seconds 5
+          $response = Invoke-RestMethod -uri http://localhost/health
+          if ($response.status -eq "ok") {
+            Write-Host "Deployment success"
+          } else {
+            throw "Health Check Fail"
+          }
