@@ -5,12 +5,12 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "hello from crocodic academy"
+    return "hello from crocodic"
 
 
 @app.route("/health")
 def health():
-    return jsonify({"status": "ok", "service": "flask-api"}), 200
+    return jsonify({"status": "error", "service": "flask-api"}), 200
 
 
 if __name__ == "__main__":
