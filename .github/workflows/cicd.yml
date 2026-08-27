@@ -10,25 +10,25 @@ env:
   USER_DOCKERHUB: louxercr
 
 jobs:
-  # validation:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
+  validation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  #     - name: Docker login
-  #       uses: actions/setup-python@v5
-  #       with:
-  #         python-version: "3.13"          
+      - name: Docker login
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"          
 
-  #     - name: Install dependencies
-  #       run: |
-  #         pip install flake8
-  #         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Install dependencies
+        run: |
+          pip install flake8
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-  #     - name: flake8 Run
-  #       run: |
-  #         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+      - name: flake8 Run
+        run: |
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 
   build-push:
     runs-on: ubuntu-latest
