@@ -63,10 +63,10 @@ jobs:
 
       - name: Run
         run: |
-          if (docker ps -q -f name=app  {
+          if (docker ps -q -f name=app)  {
             docker stop app
           }
-          if (docker ps -a -q -f name=app  {
+          if (docker ps -a -q -f name=app)  {
             docker rm app
           }
           docker run -d -p 80:5000 --name app ${{ env.USER_DOCKERHUB }}/${{ env.IMAGE_NAME }}:latest
